@@ -1,0 +1,23 @@
+{
+  "name": "nextup-backend",
+  "version": "1.0.0",
+  "description": "This is a platform where you can discover opportunities, find partners to collaborate and find peers to teach you a skill in exchange for a skill.",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "test": "npm start",
+    "dev": "nodemon server.js"
+  },
+  "keywords": [
+    "backend",
+    "nextup",
+    "node"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "mongoose": "^9.5.0"
+  }
+}
