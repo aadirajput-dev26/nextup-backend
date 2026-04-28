@@ -1,40 +1,56 @@
 import mongoose from "mongoose";
 
-const opportunity_schema = mongoose.Schema({
+const opportunity_schema = mongoose.Schema(
+  {
     title: {
-        type: String, 
-        required: true 
+      type: String,
+      required: true,
     },
-    type: { 
-        type: String, enum: ["internship", "scholarship", "event"], required: true 
+    type: {
+      type: String,
+      enum: ["internship", "scholarship", "event"],
+      required: true,
     },
-    description: { 
-        type: String 
+    description: {
+      type: String,
     },
-    deadline: { 
-        type: Date 
+    deadline: {
+      type: Date,
     },
-    location: { 
-        type: String 
+    location: {
+      type: String,
     },
     tags: {
-        type : [String]
+      type: [String],
     },
-    posted_by_student: { 
-        type: mongoose.Schema.Types.ObjectId, 
-        ref: "Student" 
+
+    // Unified postedBy – works for both student and organisation
+    postedBy: {
+      id: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+        refPath: "postedBy.role", // dynamic reference
+      },
+      role: {
+        type: String,
+        enum: ["Student", "Organisation"], // capitalised to match model names
+        required: true,
+      },
     },
-    posted_by_organisation: { 
-        type: mongoose.Schema.Types.ObjectId, 
-        ref: "Organisation" 
-    },
+
+    // Only students can be applicants
     applicants: [
-        { 
-            type: mongoose.Schema.Types.ObjectId, 
-            ref: "Student" 
-        }
-    ]
-}, { timestamps: true });
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Student",
+      },
+    ],
+    apply_link: {
+      type: String,
+    },
+  },
+  { timestamps: true }
+);
 
 const Opportunity = mongoose.model("Opportunity", opportunity_schema);
 export default Opportunity;

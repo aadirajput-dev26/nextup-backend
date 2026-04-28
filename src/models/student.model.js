@@ -30,7 +30,6 @@ const student_schema = mongoose.Schema({
     },
     location : {
         type : String,
-        required : true
     },
     intrested_domains : {
         type : [String],

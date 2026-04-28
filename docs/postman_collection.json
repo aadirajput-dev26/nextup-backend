@@ -1,0 +1,2217 @@
+{
+  "info": {
+    "name": "NextUp API Collection",
+    "description": "Complete API documentation for the NextUp backend.\\n\\n### Role-Based Access Control (RBAC)\\n- **Student:** Can create/join collaborations, apply to opportunities, request skillswaps.\\n- **Organisation:** Can create opportunities, view applicants.\\n\\n### Common Error Codes\\n- **400 Bad Request:** Missing fields or validation error.\\n- **401 Unauthorized:** Missing or invalid JWT token.\\n- **403 Forbidden:** User lacks the necessary role or permissions to perform the action.\\n- **404 Not Found:** The requested resource does not exist.\\n- **409 Conflict:** Resource already exists (e.g. duplicate connection).\\n- **500 Internal Server Error:** Unexpected backend error.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000/api",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "description": "Authentication endpoints for signup, login, and logout.",
+      "item": [
+        {
+          "name": "Signup",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"student@example.com\",\n    \"password\": \"password123\",\n    \"role\": \"student\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/signup",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "signup"
+              ]
+            },
+            "description": "Register a new user. Role must be `student` or `organisation`."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "code": 201,
+              "status": "Created",
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"User created successfully\",\n  \"userId\": \"60f...\"\n}"
+            },
+            {
+              "name": "Error - Conflict",
+              "code": 409,
+              "status": "Conflict",
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"Email already in use\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"student@example.com\",\n    \"password\": \"password123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Authenticate user and receive a JWT token."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "code": 200,
+              "status": "OK",
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"token\": \"eyJ...\",\n  \"user\": { \"id\": \"...\", \"role\": \"student\" }\n}"
+            },
+            {
+              "name": "Error - Unauthorized",
+              "code": 401,
+              "status": "Unauthorized",
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"Invalid credentials\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/logout",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "logout"
+              ]
+            },
+            "description": "Blacklist the current JWT token."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "code": 200,
+              "status": "OK",
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"Logged out successfully\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "description": "User profile management.",
+      "item": [
+        {
+          "name": "Get Current User Profile",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "me"
+              ]
+            },
+            "description": "Fetch the authenticated user's profile."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "code": 200,
+              "status": "OK",
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"profile\": {\n    \"name\": \"John Doe\",\n    \"skills\": [\"React\"],\n    \"coin_balance\": 100\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get User Profile by ID",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "USER_ID"
+                }
+              ]
+            },
+            "description": "Fetch a specific user's public profile."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "code": 200,
+              "status": "OK",
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"profile\": {\n    \"name\": \"Jane Doe\",\n    \"skills\": [\"Vue\"]\n  }\n}"
+            },
+            {
+              "name": "Error - Not Found",
+              "code": 404,
+              "status": "Not Found",
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"User not found\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"location\": \"San Francisco, CA\",\n    \"skills\": [\"React\", \"Node.js\"]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/update",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "update"
+              ]
+            },
+            "description": "Partially update the authenticated user's profile."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "code": 200,
+              "status": "OK",
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"Profile updated successfully\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Account",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "USER_ID"
+                }
+              ]
+            },
+            "description": "**Access:** Only the owner can delete their account.\nDelete the user account and associated profile."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "code": 200,
+              "status": "OK",
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"User account deleted\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Opportunities",
+      "description": "Manage job, internship, or project opportunities.",
+      "item": [
+        {
+          "name": "Create Opportunity",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"title\": \"Frontend Developer Internship\",\n    \"type\": \"internship\",\n    \"description\": \"Join our team...\",\n    \"location\": \"Remote\",\n    \"tags\": [\"react\", \"javascript\"]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/opportunities",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "opportunities"
+              ]
+            },
+            "description": "**Access:** Organisation or Student.\nCreates a new opportunity. Triggers notifications to connections."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "code": 201,
+              "status": "Created",
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"_id\": \"...\",\n  \"title\": \"Frontend Developer Internship\",\n  \"type\": \"internship\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "List All Opportunities",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/opportunities",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "opportunities"
+              ]
+            },
+            "description": "Fetch all open opportunities sorted by creation date."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "code": 200,
+              "status": "OK",
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "[\n  {\n    \"_id\": \"1\",\n    \"title\": \"Frontend Intern\",\n    \"postedBy\": { \"name\": \"Acme Corp\" }\n  }\n]"
+            }
+          ]
+        },
+        {
+          "name": "Get Opportunity Details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/opportunities/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "opportunities",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "OPP_ID"
+                }
+              ]
+            },
+            "description": "Fetch details for a single opportunity including postedBy populated."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "code": 200,
+              "status": "OK",
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"_id\": \"1\",\n  \"title\": \"Frontend Intern\",\n  \"postedBy\": { \"name\": \"Acme Corp\" }\n}"
+            },
+            {
+              "name": "Error - Not Found",
+              "code": 404,
+              "status": "Not Found",
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"Opportunity not found\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Opportunity",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"title\": \"Updated Title\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/opportunities/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "opportunities",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "OPP_ID"
+                }
+              ]
+            },
+            "description": "**Access:** Creator only.\nUpdate an existing opportunity."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "code": 200,
+              "status": "OK",
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"_id\": \"1\",\n  \"title\": \"Updated Title\"\n}"
+            },
+            {
+              "name": "Error - Forbidden",
+              "code": 403,
+              "status": "Forbidden",
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"You are not authorised to update this opportunity\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Opportunity",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/opportunities/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "opportunities",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "OPP_ID"
+                }
+              ]
+            },
+            "description": "**Access:** Creator only.\nDelete an opportunity."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "code": 204,
+              "status": "No Content",
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": ""
+            }
+          ]
+        },
+        {
+          "name": "Apply to Opportunity",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/opportunities/:id/apply",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "opportunities",
+                ":id",
+                "apply"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "OPP_ID"
+                }
+              ]
+            },
+            "description": "**Access:** Student only.\nApplies the authenticated student to the opportunity."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "code": 200,
+              "status": "OK",
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"Applied successfully\"\n}"
+            },
+            {
+              "name": "Error - Conflict",
+              "code": 409,
+              "status": "Conflict",
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"You have already applied\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "List Applicants",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/opportunities/:id/applicants",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "opportunities",
+                ":id",
+                "applicants"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "OPP_ID"
+                }
+              ]
+            },
+            "description": "**Access:** Creator only.\nView all students who applied to this opportunity."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "code": 200,
+              "status": "OK",
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"applicants\": [\n    {\n      \"_id\": \"1\",\n      \"name\": \"John Doe\",\n      \"skills\": [\"React\"]\n    }\n  ]\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Skillswap",
+      "description": "Skill exchange requests and processing.",
+      "item": [
+        {
+          "name": "Create Skillswap",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"mode\": \"coin\",\n    \"skillName\": \"Guitar Lessons\",\n    \"description\": \"Looking for someone to teach me guitar basics\",\n    \"coinCost\": 50,\n    \"skillRequested\": \"Guitar\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/skillswap",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "skillswap"
+              ]
+            },
+            "description": "**Access:** Student only.\nCreates a skillswap request. **mode** can be `coin` or `skill`.\n- If `coin`, `coinCost` is required.\n- If `skill`, `skillOffered` and `skillRequested` are required."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "code": 201,
+              "status": "Created",
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"_id\": \"...\",\n  \"mode\": \"coin\",\n  \"status\": \"open\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "List Skillswaps",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/skillswap",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "skillswap"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "code": 200,
+              "status": "OK",
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "[\n  {\n    \"_id\": \"1\",\n    \"skillName\": \"Guitar Lessons\",\n    \"status\": \"open\"\n  }\n]"
+            }
+          ]
+        },
+        {
+          "name": "Get Skillswap Details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/skillswap/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "skillswap",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "SKILLSWAP_ID"
+                }
+              ]
+            },
+            "description": "Fetch details of a skillswap, populated with creator and accepter."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "code": 200,
+              "status": "OK",
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"_id\": \"1\",\n  \"skillName\": \"Guitar Lessons\",\n  \"createdBy\": { \"name\": \"Jane Doe\" }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Skillswap",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"description\": \"Updated description\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/skillswap/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "skillswap",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "SKILLSWAP_ID"
+                }
+              ]
+            },
+            "description": "**Access:** Creator only."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "code": 200,
+              "status": "OK",
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"_id\": \"1\",\n  \"description\": \"Updated description\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Skillswap",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/skillswap/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "skillswap",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "SKILLSWAP_ID"
+                }
+              ]
+            },
+            "description": "**Access:** Creator only."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "code": 204,
+              "status": "No Content",
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": ""
+            }
+          ]
+        },
+        {
+          "name": "Accept Skillswap",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/skillswap/:id/accept",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "skillswap",
+                ":id",
+                "accept"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "SKILLSWAP_ID"
+                }
+              ]
+            },
+            "description": "**Access:** Student only.\n**Lifecycle:** `open` → `accepted`.\nAccepts the request. If `mode: coin`, transfers coins atomically and logs transaction. Cannot accept your own request."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "code": 200,
+              "status": "OK",
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"_id\": \"1\",\n  \"status\": \"accepted\",\n  \"acceptedBy\": \"USER_ID\"\n}"
+            },
+            {
+              "name": "Error - Insufficient Coins",
+              "code": 402,
+              "status": "Payment Required",
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"Requester does not have enough coins\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Complete Skillswap",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"feedback\": \"Great session!\",\n    \"rating\": 5\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/skillswap/:id/complete",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "skillswap",
+                ":id",
+                "complete"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "SKILLSWAP_ID"
+                }
+              ]
+            },
+            "description": "**Access:** Creator or Accepter.\n**Lifecycle:** `accepted` → `completed`.\nMarks the swap as completed and stores optional feedback/rating."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "code": 200,
+              "status": "OK",
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"_id\": \"1\",\n  \"status\": \"completed\",\n  \"feedback\": \"Great session!\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Collaborations",
+      "description": "Group project boards and participation.",
+      "item": [
+        {
+          "name": "Create Collaboration",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"title\": \"Hackathon Team\",\n    \"description\": \"Looking for a frontend developer for a hackathon\",\n    \"requiredSkills\": [\"React\", \"Figma\"]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/collaborations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "collaborations"
+              ]
+            },
+            "description": "**Access:** Student only."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "code": 201,
+              "status": "Created",
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"_id\": \"...\",\n  \"title\": \"Hackathon Team\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "List Collaborations",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/collaborations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "collaborations"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "code": 200,
+              "status": "OK",
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "[\n  {\n    \"_id\": \"1\",\n    \"title\": \"Hackathon Team\",\n    \"participants\": []\n  }\n]"
+            }
+          ]
+        },
+        {
+          "name": "Get Collaboration Details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/collaborations/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "collaborations",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "COLLAB_ID"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "code": 200,
+              "status": "OK",
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"_id\": \"1\",\n  \"title\": \"Hackathon Team\",\n  \"createdBy\": { \"name\": \"John Doe\" }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Collaboration",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"title\": \"Updated Team Name\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/collaborations/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "collaborations",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "COLLAB_ID"
+                }
+              ]
+            },
+            "description": "**Access:** Creator only."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "code": 200,
+              "status": "OK",
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"_id\": \"1\",\n  \"title\": \"Updated Team Name\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Collaboration",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/collaborations/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "collaborations",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "COLLAB_ID"
+                }
+              ]
+            },
+            "description": "**Access:** Creator only."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "code": 204,
+              "status": "No Content",
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": ""
+            }
+          ]
+        },
+        {
+          "name": "Join Collaboration",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/collaborations/:id/join",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "collaborations",
+                ":id",
+                "join"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "COLLAB_ID"
+                }
+              ]
+            },
+            "description": "**Access:** Student only.\nAdds student to participants array.\n**Error 409:** Already joined.\n**Error 400:** Cannot join your own collaboration."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "code": 200,
+              "status": "OK",
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"Joined collaboration\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "List Participants",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/collaborations/:id/members",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "collaborations",
+                ":id",
+                "members"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "COLLAB_ID"
+                }
+              ]
+            },
+            "description": "Fetch details of all participants in the collaboration."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "code": 200,
+              "status": "OK",
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"participants\": [\n    {\n      \"_id\": \"1\",\n      \"name\": \"Jane Doe\"\n    }\n  ]\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Connections",
+      "description": "User to User and User to Organisation networking.",
+      "item": [
+        {
+          "name": "Send Connection Request",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"toUserId\": \"USER_OBJECT_ID\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/connections/request",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "connections",
+                "request"
+              ]
+            },
+            "description": "**Lifecycle:** Creates a connection in `pending` status.\n**Note:** Organisations cannot send requests to students.\n**Error 409:** Request already exists or was rejected."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "code": 201,
+              "status": "Created",
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"_id\": \"...\",\n  \"status\": \"pending\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "List My Connections",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/connections",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "connections"
+              ]
+            },
+            "description": "Lists all `accepted` connections (followers)."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "code": 200,
+              "status": "OK",
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"connections\": [\n    {\n      \"_id\": \"1\",\n      \"status\": \"accepted\",\n      \"from\": { \"id\": { \"name\": \"John Doe\" } }\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Connection Details",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/connections/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "connections",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "CONN_ID"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "code": 200,
+              "status": "OK",
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"_id\": \"1\",\n  \"status\": \"pending\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Accept Request",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/connections/:id/accept",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "connections",
+                ":id",
+                "accept"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "CONN_ID"
+                }
+              ]
+            },
+            "description": "**Access:** Recipient only.\nMarks connection as `accepted`."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "code": 200,
+              "status": "OK",
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"_id\": \"1\",\n  \"status\": \"accepted\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Reject Request",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/connections/:id/reject",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "connections",
+                ":id",
+                "reject"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "CONN_ID"
+                }
+              ]
+            },
+            "description": "**Access:** Recipient only.\nMarks connection as `rejected`."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "code": 200,
+              "status": "OK",
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"_id\": \"1\",\n  \"status\": \"rejected\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Connection",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/connections/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "connections",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "CONN_ID"
+                }
+              ]
+            },
+            "description": "**Access:** Either participant.\nRemoves the connection document."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "code": 204,
+              "status": "No Content",
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": ""
+            }
+          ]
+        },
+        {
+          "name": "Reject Connection Request",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/connections/:id/reject",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "connections",
+                ":id",
+                "reject"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "CONNECTION_ID"
+                }
+              ]
+            },
+            "description": "**Access:** Recipient only.\nReject a pending connection request."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "code": 200,
+              "status": "OK",
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{ \"message\": \"Connection request rejected\" }"
+            }
+          ]
+        },
+        {
+          "name": "Remove Connection",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/connections/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "connections",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "CONNECTION_ID"
+                }
+              ]
+            },
+            "description": "**Access:** Either participant.\nRemove an existing connection."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "code": 200,
+              "status": "OK",
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{ \"message\": \"Connection removed\" }"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "description": "Real-time SSE and historical notifications.",
+      "item": [
+        {
+          "name": "List Notifications",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/notifications",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "notifications"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "code": 200,
+              "status": "OK",
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"notifications\": [\n    {\n      \"_id\": \"1\",\n      \"type\": \"opportunity\",\n      \"message\": \"A new opportunity was posted.\",\n      \"status\": \"unread\"\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Mark as Read",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/notifications/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "notifications",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "NOTIF_ID"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "code": 200,
+              "status": "OK",
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"Notification marked as read\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Mark All as Read",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/notifications/mark-all-read",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "notifications",
+                "mark-all-read"
+              ]
+            },
+            "description": "Bulk update all unread notifications for the user."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "code": 200,
+              "status": "OK",
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"All notifications marked as read\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Notification",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/notifications/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "notifications",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "NOTIF_ID"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "code": 204,
+              "status": "No Content",
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": ""
+            }
+          ]
+        },
+        {
+          "name": "SSE Stream",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/notifications/stream",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "notifications",
+                "stream"
+              ]
+            },
+            "description": "Establish a Server-Sent Events stream for real-time notifications. Connect using an EventSource client.\n\n**Note:** Keeps the HTTP connection open indefinitely."
+          },
+          "response": [
+            {
+              "name": "Stream Connected",
+              "code": 200,
+              "status": "OK",
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "data: {\"type\": \"connection\", \"message\": \"New connection request\"}\n\n"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Transactions",
+      "description": "Internal ledger for coin movements.",
+      "item": [
+        {
+          "name": "Create Transaction (Internal)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"senderId\": \"...\",\n    \"receiverId\": \"...\",\n    \"amount\": 50,\n    \"reason\": \"skillswap\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/transactions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "transactions"
+              ]
+            },
+            "description": "**Access:** Internal Service-to-Service.\nTriggered automatically by services like Skillswap. Not intended to be called directly by clients."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "code": 201,
+              "status": "Created",
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"_id\": \"...\",\n  \"amount\": 50,\n  \"reason\": \"skillswap\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "List Transactions",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/transactions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "transactions"
+              ]
+            },
+            "description": "Returns transactions where the authenticated user is either the sender or receiver."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "code": 200,
+              "status": "OK",
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"transactions\": [\n    {\n      \"_id\": \"1\",\n      \"amount\": 50,\n      \"reason\": \"skillswap\",\n      \"sender\": { \"id\": { \"name\": \"Jane\" } }\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Transaction Details",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/transactions/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "transactions",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "TRANS_ID"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "code": 200,
+              "status": "OK",
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"_id\": \"1\",\n  \"amount\": 50,\n  \"reason\": \"skillswap\"\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

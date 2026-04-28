@@ -3,7 +3,6 @@ import mongoose from "mongoose";
 const organisation_schema = mongoose.Schema({
     name: { 
         type: String, 
-        required: true 
     },
     email: { 
         type: String, 
@@ -12,7 +11,6 @@ const organisation_schema = mongoose.Schema({
     },
     password: { 
         type: String, 
-        required: true 
     }, 
     avatar: { 
         type: String, 
