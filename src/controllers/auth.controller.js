@@ -57,20 +57,48 @@ export const login = async (req, res) => {
 
 // OAuth callback (shared by Google & GitHub)
 // Called after Passport attaches req.user
+// Redirects to the frontend with token + user info as query params
 export const oauthCallback = (req, res) => {
   try {
     const user = req.user; // set by Passport
+    
+    // Determine the frontend URL dynamically
+    let frontendUrl = process.env.FRONTEND_URL_PROD || process.env.FRONTEND_URL_LOCAL || "http://localhost:3000";
+    try {
+      if (req.query.state) {
+        const state = JSON.parse(req.query.state);
+        if (state.origin) frontendUrl = state.origin;
+      }
+    } catch (e) {
+      // fallback to env vars if state is not JSON
+    }
+
     if (!user) {
-      return res.status(401).json({ message: "OAuth authentication failed" });
+      return res.redirect(`${frontendUrl}/auth/callback?error=authentication_failed`);
     }
 
     const token = issueToken(user);
+    const userData = publicUser(user);
 
-    // Return as JSON – the client reads this from the redirect response
-    return res.status(200).json({ token, user: publicUser(user) });
+    const params = new URLSearchParams({
+      token,
+      id: userData.id.toString(),
+      email: userData.email,
+      role: userData.role,
+      provider: userData.provider,
+    });
+
+    return res.redirect(`${frontendUrl}/auth/callback?${params.toString()}`);
   } catch (err) {
     console.error("[oauthCallback]", err);
-    return res.status(500).json({ message: "Internal server error" });
+    let frontendUrl = process.env.FRONTEND_URL_PROD || process.env.FRONTEND_URL_LOCAL || "http://localhost:3000";
+    try {
+      if (req.query.state) {
+        const state = JSON.parse(req.query.state);
+        if (state.origin) frontendUrl = state.origin;
+      }
+    } catch (e) {}
+    return res.redirect(`${frontendUrl}/auth/callback?error=server_error`);
   }
 };
 

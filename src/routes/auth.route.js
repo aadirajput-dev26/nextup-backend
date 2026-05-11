@@ -22,9 +22,10 @@ router.post("/logout", verifyToken, logout);
 // GET /auth/google?role=student   or  ?role=organisation
 router.get("/google", (req, res, next) => {
   const role = req.query.role || "student";
+  const origin = req.query.origin || "";
   passport.authenticate("google", {
     scope: ["profile", "email"],
-    state: role, // forwarded through OAuth flow and read in strategy
+    state: JSON.stringify({ role, origin }), // forwarded through OAuth flow
     session: false,
   })(req, res, next);
 });
@@ -42,9 +43,10 @@ router.get(
 // GET /auth/github?role=student   or  ?role=organisation
 router.get("/github", (req, res, next) => {
   const role = req.query.role || "student";
+  const origin = req.query.origin || "";
   passport.authenticate("github", {
     scope: ["user:email"],
-    state: role,
+    state: JSON.stringify({ role, origin }),
     session: false,
   })(req, res, next);
 });

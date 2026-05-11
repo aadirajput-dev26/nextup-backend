@@ -1,3 +1,4 @@
+import "dotenv/config";
 import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import { Strategy as GitHubStrategy } from "passport-github2";
@@ -39,13 +40,20 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: "/auth/google/callback",
+      callbackURL: "/api/auth/google/callback",
       passReqToCallback: true, // so we can read req.query.state
     },
     async (req, accessToken, refreshToken, profile, done) => {
       try {
-        // Role is forwarded in the OAuth state param
-        const role = req.query.state || "student";
+        // State is a JSON string containing { role, origin }
+        let role = "student";
+        try {
+          const state = JSON.parse(req.query.state);
+          role = state.role || "student";
+        } catch (e) {
+          role = req.query.state || "student";
+        }
+        
         const email = profile.emails?.[0]?.value;
 
         if (!email) return done(new Error("No email from Google"), null);
@@ -71,13 +79,20 @@ passport.use(
     {
       clientID: process.env.GITHUB_CLIENT_ID,
       clientSecret: process.env.GITHUB_CLIENT_SECRET,
-      callbackURL: "/auth/github/callback",
+      callbackURL: "/api/auth/github/callback",
       scope: ["user:email"],
       passReqToCallback: true,
     },
     async (req, accessToken, refreshToken, profile, done) => {
       try {
-        const role = req.query.state || "student";
+        let role = "student";
+        try {
+          const state = JSON.parse(req.query.state);
+          role = state.role || "student";
+        } catch (e) {
+          role = req.query.state || "student";
+        }
+
         const email =
           profile.emails?.[0]?.value ||
           `${profile.username}@github.noemail.local`;

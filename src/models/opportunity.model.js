@@ -8,7 +8,7 @@ const opportunity_schema = mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ["internship", "scholarship", "event"],
+      enum: ["internship", "scholarship", "event", "hackathon", "opportunity"],
       required: true,
     },
     description: {

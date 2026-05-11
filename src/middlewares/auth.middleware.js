@@ -1,14 +1,20 @@
 import jwt from "jsonwebtoken";
 
 // verifyToken – authenticate every protected route
+// Also accepts token from query params (for SSE EventSource compatibility)
 export const verifyToken = (req, res, next) => {
   const authHeader = req.headers.authorization;
+  let token = null;
 
-  if (!authHeader?.startsWith("Bearer ")) {
-    return res.status(401).json({ message: "No token provided" });
+  if (authHeader?.startsWith("Bearer ")) {
+    token = authHeader.split(" ")[1];
+  } else if (req.query?.token) {
+    token = req.query.token;
   }
 
-  const token = authHeader.split(" ")[1];
+  if (!token) {
+    return res.status(401).json({ message: "No token provided" });
+  }
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
